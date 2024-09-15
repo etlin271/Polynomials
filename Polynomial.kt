@@ -6,59 +6,52 @@
 * equality
  */
 class Polynomial(private val coefficients: List<Int>) {
-    fun string(): String {
-        var string = ""
-        coefficients.forEachIndexed { index, i ->
-            println(coefficients[index])
-            if(index != 0 && index != coefficients.lastIndex && i > 0) {
-                val term = " + ${i}x^$index"
-                string = term + string
+    override fun toString(): String {
+        val terms = coefficients.indices
+            .reversed()
+            .mapNotNull { i ->
+                val coefficient = coefficients[i]
+                if (coefficient >= 0){
+                    when {
+                        coefficient == 0 -> null 
+                        i == 0 -> coefficient.toString()
+                        i == 1 -> "${if (coefficient != 1) coefficient else ""}x"
+                        else -> "${if (coefficient != 1) coefficient else ""}x^$i"
+                    }
+                }
+                else {
+                    when (i) {
+                        0 -> "-$coefficient"
+                        1 -> "${if (coefficient != -1) "$coefficient" else "-"}x"
+                        else -> "${if (coefficient != -1) "$coefficient" else "-"}x^$i"
+                    }
+                }
+            } 
+            .joinToString(separator = " ") { term ->
+                if (term.startsWith("-")) "- ${term.removePrefix("-")}"
+                else "+ $term"
             }
-            else if (index != 0 && index == coefficients.lastIndex && i > 0) {
-                val term = "${i}x^$index"
-                string = term + string
-            }
-            else if (index != 0 && index != coefficients.lastIndex && i < 0) {
-                val term = " - ${i}x^$index"
-                string = term + string
-            }
-            else if (index != 0 && index == coefficients.lastIndex && i < 0) {
-                val term = "${i}x^$index"
-                string = term + string
-            }
-            else if (index == 0 && i > 0) {
-                val term = " + $i"
-                string = term + string
-            }
-            else if (index == 0 && i < 0) {
-                val term = " - $i"
-                string = term + string
-            }
-        }
-        return string
+            .removePrefix("+ ")
+
+        return terms.ifEmpty { "0" }
     }
 
-    fun plus(other: Polynomial): Polynomial {
+    operator fun plus(other: Polynomial): Polynomial {
         val sumCoefficients = mutableListOf<Int>()
-        if(coefficients.size > other.coefficients.size) {
+        if (coefficients.size > other.coefficients.size) {
             coefficients.forEachIndexed { index, i ->
                 sumCoefficients.add(i + other.coefficients[index])
             }
-        }
-        else {
+        } else {
             other.coefficients.forEachIndexed { index, i ->
                 sumCoefficients.add(i + coefficients[index])
             }
         }
-        val sum = Polynomial(sumCoefficients)
-        return sum
+        return Polynomial(sumCoefficients)
     }
 }
 
 fun main() {
-    val x = Polynomial(listOf(1, 1, 1))
-    println(x.string())
-    val y = Polynomial(listOf(1, 1, 1))
-    println(x.string())
-    println((x.plus(y)).string())
+    val x = Polynomial(listOf(-1, -2, -3, -4))
+    println(x.toString())
 }
